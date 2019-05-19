@@ -22,16 +22,23 @@ function Game(el, size) {
             var tr = document.createElement('tr');
             that.el.append(tr);
             for (var x = (start_x || 0); x < cols + (start_x || 0); x++) {
-                var td = document.createElement('td');
-                td.id = getTileId({ x, y });
-                td.className = 'game-tile';
-                tr.appendChild(td);
+                (function () {
+                    var td = document.createElement('td');
+                    td.id = getTileId({ x, y });
+                    td.className = 'game-tile';
+                    var d = {};
+                    d.x = x;
+                    d.y = y;
+                    td.addEventListener('click', function () {
+                        that.dig(d.x, d.y);
+                    });
+                    tr.appendChild(td);
+                })();
             }
         }
     };
     this.initialize = function () {
         that.generate(that.size, that.size);
-        
     };
     var sums = [ //add to x and y to find adjacent tiles when revealing
         {
@@ -93,7 +100,7 @@ function Game(el, size) {
         for (var i = 0; i < Math.ceil(that.size * that.size / 7); i++) {
             var x = getRandomInt(0, that.size - 1);
             var y = getRandomInt(0, that.size - 1);
-            while ({x, y} == exclude) {
+            while ({ x, y } == exclude) {
                 x = getRandomInt(0, that.size - 1);
                 y = getRandomInt(0, that.size - 1);
             }
@@ -102,8 +109,12 @@ function Game(el, size) {
         }
     };
     this.dig = function (x, y) {
-        var tile = that.tiles.get(getTileId({x, y}));
-        tile.reveal();
+        var tile = that.tiles.get(getTileId({ x, y }));
+        if (!tile) {
+            tile = new Tile(x, y, false);
+        }
+        tile.pushToGame(that);
+        that.reveal(tile);
     };
 };
 
