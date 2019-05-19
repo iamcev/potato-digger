@@ -17,6 +17,7 @@ function Game(el, size) {
     this.el = $(el);
     this.size = size;
     this.tiles = new Map();
+    this.gameOver = false;
     this.generate = function (rows, cols, start_x, start_y) {
         for (var y = (start_y || 0); y < rows + (start_y || 0); y++) {
             var tr = document.createElement('tr');
@@ -92,6 +93,18 @@ function Game(el, size) {
             if (tile.isDuck) {
                 $td.text('🦆');
                 $td.removeClass('unrevealed');
+                if (that.gameOver == false) {
+                    that.gameOver = true;
+                    that.tiles.forEach(function (tile) {
+                        if (tile.isDuck) {
+                            tile.isVisible = true;
+                            that.reveal(tile);
+                        }
+                    });
+                    setTimeout(function () {
+                        document.body.innerHTML = 'YOU DIED!!!! 🦆';
+                    }, 3000);
+                }
             } else {
                 sums.forEach(function (sum) {
                     var foundTile = that.tiles.get(getTileId({
@@ -104,6 +117,7 @@ function Game(el, size) {
                         }
                     }
                 });
+                $td.addClass('color-' + ducks);
                 $td.text(ducks);
                 $td.removeClass('unrevealed');
             }

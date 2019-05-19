@@ -2,8 +2,26 @@
     width: 20px;
     height: 20px;
     border: 2px black solid;
+    text-align: center;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
 .unrevealed {
     background: black;
+}
+
+.color-0 {
+    color: #00000044;
+}
+
+.color-1 {
+    color: #4caf50;
+}
+
+.color-2 {
+    color: #2196F3;
+}
+
+.color-3 {
+    color: #f44336;
 }
