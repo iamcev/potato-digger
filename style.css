@@ -1,5 +1,9 @@
-td {
+.game-tile {
     width: 20px;
     height: 20px;
     border: 2px black solid;
+}
+
+.unrevealed {
+    background: black;
 }

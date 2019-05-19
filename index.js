@@ -25,23 +25,19 @@ function Game(el, size) {
                 (function () {
                     var td = document.createElement('td');
                     td.id = getTileId({ x, y });
-                    td.className = 'game-tile';
+                    td.className = 'game-tile unrevealed';
                     var d = {};
                     d.x = x;
                     d.y = y;
-                    td.addEventListener('mouseup', function (e) {
+                    td.onclick = function (e) {
                         e.preventDefault();
-                        if (e.button === 0)
-                            that.dig(d.x, d.y);
-                        else if (e.button === 2)
-                            that.mark(d.x, d.y);
-                    });
+                        if (!that.el.hasClass('dirty'))
+                            that.plantDucks({ x: d.x, y: d.y });
+                        that.dig(d.x, d.y);
+                        that.el.addClass('dirty');
+                    };
                     td.oncontextmenu = function (e) {
-                        e.preventDefault();
-                        if (e.button === 0)
-                            that.dig(d.x, d.y);
-                        else if (e.button === 2)
-                            that.mark(d.x, d.y);
+                        that.mark(d.x, d.y);
                         return false;
                     };
                     tr.appendChild(td);
@@ -92,23 +88,31 @@ function Game(el, size) {
 
         if (tile.isMarked) {
             $td.text('🚩');
-        } else if (tile.isDuck) {
-            $td.text('duck.');
-        } else {
-            sums.forEach(function (sum) {
-                var foundTile = that.tiles.get(getTileId({
-                    x: tile.x + sum.x,
-                    y: tile.y + sum.y
-                }));
-                if (foundTile) {
-                    if (foundTile.isDuck) {
-                        ducks++;
+        } else if (tile.isVisible) {
+            if (tile.isDuck) {
+                $td.text('🦆');
+                $td.removeClass('unrevealed');
+            } else {
+                sums.forEach(function (sum) {
+                    var foundTile = that.tiles.get(getTileId({
+                        x: tile.x + sum.x,
+                        y: tile.y + sum.y
+                    }));
+                    if (foundTile) {
+                        if (foundTile.isDuck) {
+                            ducks++;
+                        }
                     }
-                }
-            });
-
-            $td.text(ducks);
+                });
+                $td.text(ducks);
+                $td.removeClass('unrevealed');
+            }
+        } else if (!tile.isVisible) {
+            $td.addClass('unrevealed');
+            $td.text('');
         }
+
+        return ducks;
     };
     this.plantDucks = function (exclude) {
         for (var i = 0; i < Math.ceil(that.size * that.size / 7); i++) {
@@ -122,22 +126,42 @@ function Game(el, size) {
             tile.pushToGame(that);
         }
     };
+
+    function loopSurroundingTiles(tile) {
+        sums.forEach(function (sum) {
+            var foundTile = that.tiles.get(getTileId({
+                x: tile.x + sum.x,
+                y: tile.y + sum.y
+            })) || new Tile(tile.x + sum.x, tile.y + sum.y);
+            foundTile.isVisible = true;
+            foundTile.pushToGame(that);
+            that.reveal(foundTile);
+        });
+    }
+
     this.dig = function (x, y) {
         var tile = that.tiles.get(getTileId({ x, y }));
         if (!tile) {
             tile = new Tile(x, y, false);
         }
+        tile.isVisible = true;
         tile.pushToGame(that);
-        that.reveal(tile);
+        if (that.reveal(tile) === 0 && !tile.isDuck)
+            loopSurroundingTiles(tile);
     };
     this.mark = function (x, y) {
         var tile = that.tiles.get(getTileId({ x, y }));
         if (!tile) {
             tile = new Tile(x, y, false);
         }
-        tile.isMarked = true;
-        tile.pushToGame(that);
-        that.reveal(tile);
+        if (!tile.isVisible) {
+            if (tile.isMarked)
+                tile.isMarked = false;
+            else
+                tile.isMarked = true;
+            tile.pushToGame(that);
+            that.reveal(tile);
+        }
     }
 };
 
