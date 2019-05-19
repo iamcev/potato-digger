@@ -29,9 +29,21 @@ function Game(el, size) {
                     var d = {};
                     d.x = x;
                     d.y = y;
-                    td.addEventListener('click', function () {
-                        that.dig(d.x, d.y);
+                    td.addEventListener('mouseup', function (e) {
+                        e.preventDefault();
+                        if (e.button === 0)
+                            that.dig(d.x, d.y);
+                        else if (e.button === 2)
+                            that.mark(d.x, d.y);
                     });
+                    td.oncontextmenu = function (e) {
+                        e.preventDefault();
+                        if (e.button === 0)
+                            that.dig(d.x, d.y);
+                        else if (e.button === 2)
+                            that.mark(d.x, d.y);
+                        return false;
+                    };
                     tr.appendChild(td);
                 })();
             }
@@ -78,7 +90,9 @@ function Game(el, size) {
         var $td = $('#' + getTileId(tile));
         var ducks = 0;
 
-        if (tile.isDuck) {
+        if (tile.isMarked) {
+            $td.text('🚩');
+        } else if (tile.isDuck) {
             $td.text('duck.');
         } else {
             sums.forEach(function (sum) {
@@ -116,6 +130,15 @@ function Game(el, size) {
         tile.pushToGame(that);
         that.reveal(tile);
     };
+    this.mark = function (x, y) {
+        var tile = that.tiles.get(getTileId({ x, y }));
+        if (!tile) {
+            tile = new Tile(x, y, false);
+        }
+        tile.isMarked = true;
+        tile.pushToGame(that);
+        that.reveal(tile);
+    }
 };
 
 function Tile(x, y, is_duck) {
