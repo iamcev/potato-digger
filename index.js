@@ -189,5 +189,5 @@ function Tile(x, y, is_duck) {
     };
 }
 
-var game = new Game('#game', 10);
+var game = new Game('#game', 20);
 game.initialize();
