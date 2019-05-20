@@ -21,6 +21,7 @@ function Game(el, size) {
     this.count = this.size * this.size;
     this.duckCount = Math.ceil(this.size * this.size / 7);
     this.availableFlags = this.duckCount;
+    this.time = 0;
     this.generate = function (rows, cols, start_x, start_y) {
         for (var y = (start_y || 0); y < rows + (start_y || 0); y++) {
             var tr = document.createElement('tr');
@@ -35,8 +36,17 @@ function Game(el, size) {
                     d.y = y;
                     td.onclick = function (e) {
                         e.preventDefault();
-                        if (!that.el.hasClass('dirty'))
+                        if (!that.el.hasClass('dirty')) {
                             that.plantDucks({ x: d.x, y: d.y });
+                            var startTime = new Date().getTime();
+                            that.interval = setInterval(function () {
+                                var currentTime = new Date().getTime();
+                                that.time = Math.floor((currentTime - startTime) / 1000);
+                                if (that.time > 999)
+                                    that.time = 999;
+                                that.infoEl.innerText = '🚩×' + that.availableFlags + ' :::: 🕙' + that.time.toString().padStart(3, '0');
+                            });
+                        }
                         that.dig(d.x, d.y);
                         that.el.addClass('dirty');
                     };
@@ -50,6 +60,9 @@ function Game(el, size) {
         }
     };
     this.initialize = function () {
+        that.infoEl = document.createElement('div');
+        that.infoEl.innerText = '🚩×' + that.availableFlags + ' :::: 🕙' + that.time.toString().padStart(3, '0');
+        that.el.append(that.infoEl);
         that.generate(that.size, that.size);
     };
     var sums = [ //add to x and y to find adjacent tiles when revealing
@@ -104,9 +117,10 @@ function Game(el, size) {
                             that.reveal(tile);
                         }
                     });
+                    clearInterval(that.interval);
                     setTimeout(function () {
                         document.body.innerHTML = 'YOU DIED!!!! 🦆';
-                    }, 3000);
+                    }, 1500);
                 }
             } else {
                 sums.forEach(function (sum) {
@@ -122,13 +136,17 @@ function Game(el, size) {
                 });
                 $td.addClass('color-' + ducks);
                 $td.text(ducks);
+                if (ducks === 0) {
+                    $td.text('');
+                }
                 $td.removeClass('unrevealed');
                 if (!tile.isRevealed) {
                     tile.isRevealed = true;
                     that.count--;
                     console.log(that.count);
                     if (that.count <= 0) {
-                        document.body.innerHTML = 'YOU WIN! 🥔';
+                        clearInterval(that.interval);
+                        that.infoEl.innerText = 'YOU WIN! 🕙' + that.time;
                     }
                 }
             }
@@ -143,7 +161,7 @@ function Game(el, size) {
         for (var i = 0; i < that.duckCount; i++) {
             var x = getRandomInt(0, that.size - 1);
             var y = getRandomInt(0, that.size - 1);
-            while ({ x, y } == exclude) {
+            while (exclude.x == x && exclude.y == y) {
                 x = getRandomInt(0, that.size - 1);
                 y = getRandomInt(0, that.size - 1);
             }
@@ -184,10 +202,17 @@ function Game(el, size) {
             tile = new Tile(x, y, false);
         }
         if (!tile.isVisible) {
-            if (tile.isMarked)
+            if (tile.isMarked) {
                 tile.isMarked = false;
-            else
-                tile.isMarked = true;
+                that.availableFlags++;
+                that.infoEl.innerText = '🚩×' + that.availableFlags + ' :::: 🕙' + that.time.toString().padStart(3, '0');
+            } else {
+                if (that.availableFlags > 0) {
+                    tile.isMarked = true;
+                    that.availableFlags--;
+                    that.infoEl.innerText = '🚩×' + that.availableFlags + ' :::: 🕙' + that.time.toString().padStart(3, '0');
+                }
+            }
             tile.pushToGame(that);
             that.reveal(tile);
         }
@@ -204,5 +229,5 @@ function Tile(x, y, is_duck) {
     };
 }
 
-var game = new Game('#game', 20);
+var game = new Game('#game', 15);
 game.initialize();
