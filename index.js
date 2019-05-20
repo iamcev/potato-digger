@@ -18,7 +18,9 @@ function Game(el, size) {
     this.size = size;
     this.tiles = new Map();
     this.gameOver = false;
-    this.count = size * size;
+    this.count = this.size * this.size;
+    this.duckCount = Math.ceil(this.size * this.size / 7);
+    this.availableFlags = this.duckCount;
     this.generate = function (rows, cols, start_x, start_y) {
         for (var y = (start_y || 0); y < rows + (start_y || 0); y++) {
             var tr = document.createElement('tr');
@@ -138,7 +140,7 @@ function Game(el, size) {
         return ducks;
     };
     this.plantDucks = function (exclude) {
-        for (var i = 0; i < Math.ceil(that.size * that.size / 7); i++) {
+        for (var i = 0; i < that.duckCount; i++) {
             var x = getRandomInt(0, that.size - 1);
             var y = getRandomInt(0, that.size - 1);
             while ({ x, y } == exclude) {
