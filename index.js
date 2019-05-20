@@ -170,6 +170,7 @@ function Game(el, size) {
     };
 
     function loopSurroundingTiles(tile) {
+        var isSafe = true;
         sums.forEach(function (sum) {
             var foundTile = that.tiles.get(getTileId({
                 x: tile.x + sum.x,
@@ -178,13 +179,30 @@ function Game(el, size) {
             if (!foundTile) {
                 foundTile = new Tile(tile.x + sum.x, tile.y + sum.y, false);
                 foundTile.pushToGame(that);
-                that.count++;
             }
-            if (foundTile.isFlagged)
+            if (foundTile.isMarked) {
                 return;
-            foundTile.isVisible = true;
-            that.reveal(foundTile);
+            }
+            if (foundTile.isDuck) {
+                isSafe = false;
+            }
         });
+        if (isSafe) {
+            sums.forEach(function (sum) {
+                var foundTile = that.tiles.get(getTileId({
+                    x: tile.x + sum.x,
+                    y: tile.y + sum.y
+                }));
+                if (foundTile.isMarked) {
+                    return;
+                }
+                if (!foundTile.isVisible) {
+                    that.count++;
+                }
+                foundTile.isVisible = true;
+                that.reveal(foundTile);
+            });
+        }
     }
 
     this.dig = function (x, y) {
