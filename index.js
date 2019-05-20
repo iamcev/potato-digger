@@ -102,6 +102,7 @@ function Game(el, size) {
     this.reveal = function (tile) {
         var $td = $('#' + getTileId(tile));
         var ducks = 0;
+        $td.text('');
 
         if (tile.isMarked) {
             $td.text('🚩');
