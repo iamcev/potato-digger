@@ -180,6 +180,8 @@ function Game(el, size) {
                 foundTile.pushToGame(that);
                 that.count++;
             }
+            if (foundTile.isFlagged)
+                return;
             foundTile.isVisible = true;
             that.reveal(foundTile);
         });
