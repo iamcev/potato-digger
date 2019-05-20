@@ -18,6 +18,7 @@ function Game(el, size) {
     this.size = size;
     this.tiles = new Map();
     this.gameOver = false;
+    this.count = size * size;
     this.generate = function (rows, cols, start_x, start_y) {
         for (var y = (start_y || 0); y < rows + (start_y || 0); y++) {
             var tr = document.createElement('tr');
@@ -120,6 +121,14 @@ function Game(el, size) {
                 $td.addClass('color-' + ducks);
                 $td.text(ducks);
                 $td.removeClass('unrevealed');
+                if (!tile.isRevealed) {
+                    tile.isRevealed = true;
+                    that.count--;
+                    console.log(that.count);
+                    if (that.count <= 0) {
+                        document.body.innerHTML = 'YOU WIN! 🥔';
+                    }
+                }
             }
         } else if (!tile.isVisible) {
             $td.addClass('unrevealed');
@@ -146,9 +155,13 @@ function Game(el, size) {
             var foundTile = that.tiles.get(getTileId({
                 x: tile.x + sum.x,
                 y: tile.y + sum.y
-            })) || new Tile(tile.x + sum.x, tile.y + sum.y);
+            }));
+            if (!foundTile) {
+                foundTile = new Tile(tile.x + sum.x, tile.y + sum.y);
+                foundTile.isVisible = true;
+                foundTile.pushToGame(that);
+            }
             foundTile.isVisible = true;
-            foundTile.pushToGame(that);
             that.reveal(foundTile);
         });
     }
@@ -189,5 +202,5 @@ function Tile(x, y, is_duck) {
     };
 }
 
-var game = new Game('#game', 20);
+var game = new Game('#game', 10);
 game.initialize();
