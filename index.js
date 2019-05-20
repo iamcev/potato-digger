@@ -18,10 +18,10 @@ function Game(el, size) {
     this.size = size;
     this.tiles = new Map();
     this.gameOver = false;
-    this.count = this.size * this.size;
     this.duckCount = Math.ceil(this.size * this.size / 7);
     this.availableFlags = this.duckCount;
     this.time = 0;
+    this.count = 0;
     this.generate = function (rows, cols, start_x, start_y) {
         for (var y = (start_y || 0); y < rows + (start_y || 0); y++) {
             var tr = document.createElement('tr');
@@ -142,11 +142,9 @@ function Game(el, size) {
                 $td.removeClass('unrevealed');
                 if (!tile.isRevealed) {
                     tile.isRevealed = true;
-                    that.count--;
-                    console.log(that.count);
-                    if (that.count <= 0) {
+                    if (that.count >= that.size * that.size) {
                         clearInterval(that.interval);
-                        that.infoEl.innerText = 'YOU WIN! 🕙' + that.time;
+                        that.infoEl.innerText = 'YOU WIN! 🕙' + that.time.toString().padStart(3, '0');
                     }
                 }
             }
@@ -167,6 +165,7 @@ function Game(el, size) {
             }
             var tile = new Tile(x, y, true);
             tile.pushToGame(that);
+            that.count++;
         }
     };
 
@@ -177,9 +176,9 @@ function Game(el, size) {
                 y: tile.y + sum.y
             }));
             if (!foundTile) {
-                foundTile = new Tile(tile.x + sum.x, tile.y + sum.y);
-                foundTile.isVisible = true;
+                foundTile = new Tile(tile.x + sum.x, tile.y + sum.y, false);
                 foundTile.pushToGame(that);
+                that.count++;
             }
             foundTile.isVisible = true;
             that.reveal(foundTile);
@@ -190,9 +189,12 @@ function Game(el, size) {
         var tile = that.tiles.get(getTileId({ x, y }));
         if (!tile) {
             tile = new Tile(x, y, false);
+            tile.pushToGame(that);
+            that.count++;
         }
+        if (tile.isVisible)
+            loopSurroundingTiles(tile);
         tile.isVisible = true;
-        tile.pushToGame(that);
         if (that.reveal(tile) === 0 && !tile.isDuck)
             loopSurroundingTiles(tile);
     };
