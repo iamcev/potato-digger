@@ -1,5 +1,5 @@
 .game-tile {
-    background-image: url('/potato.png');
+    background-image: url('potato.png');
     background-color: saddlebrown;
     background-repeat: no-repeat;
     background-size: 30px 30px;
