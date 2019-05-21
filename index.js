@@ -256,7 +256,7 @@ function Game(el, size) {
         if (tile.isVisible)
             loopSurroundingTiles(tile);
         tile.isVisible = true;
-        if (that.reveal(tile) === 0 && !tile.isMarked) 
+        if (that.reveal(tile) === 0 && !tile.isMarked && !tile.isDuck) 
             loopSurroundingTiles(tile);
     };
     this.mark = function (x, y) {
