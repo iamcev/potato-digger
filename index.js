@@ -145,9 +145,41 @@ function Game(el, size) {
                     if (that.tiles.size >= that.size * that.size) {
                         clearInterval(that.interval);
                         that.infoEl.innerText = 'YOU WIN! 🕙' + that.time.toString().padStart(3, '0');
-                        document.body.onclick = () => {};
+                        document.body.onclick = () => { };
                     }
                 }
+                /*if (ducks === 0) {
+                    sums.forEach(function (sum) {
+                        var tileDucks = 0;
+                        var newCoords = {
+                            x: tile.x + sum.x,
+                            y: tile.y + sum.y
+                        };
+                        var foundTile = that.tiles.get(getTileId(newCoords));
+                        if (foundTile)
+                            return;
+                        if (newCoords.x > that.size - 1 || newCoords.x < 0)
+                            return;
+                        if (newCoords.y > that.size - 1 || newCoords.y < 0)
+                            return;
+                        foundTile = new Tile(newCoords.x, newCoords.y, false);
+                        sums.forEach(function (sum) {
+                            var found = that.tiles.get(getTileId({
+                                x: newCoords.x + sum.x,
+                                y: newCoords.y + sum.y
+                            }));
+                            if (found) {
+                                if (found.isDuck) {
+                                    tileDucks++;
+                                }
+                            }
+                        });
+                        if (tileDucks > 0)
+                            return;
+                        foundTile.isVisible = true;
+                        that.reveal(foundTile);
+                    });
+                }*/
             }
         } else if (!tile.isVisible) {
             $td.addClass('unrevealed');
@@ -191,7 +223,7 @@ function Game(el, size) {
             }
         });
         if (isSafe) {
-            sums.forEach(function (sum) {
+            sums.forEach(function (sum, index) {
                 var newCoords = {
                     x: tile.x + sum.x,
                     y: tile.y + sum.y
@@ -224,7 +256,7 @@ function Game(el, size) {
         if (tile.isVisible)
             loopSurroundingTiles(tile);
         tile.isVisible = true;
-        if (that.reveal(tile) === 0 && !tile.isDuck)
+        if (that.reveal(tile) === 0 && !tile.isMarked) 
             loopSurroundingTiles(tile);
     };
     this.mark = function (x, y) {
