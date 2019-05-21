@@ -21,7 +21,6 @@ function Game(el, size) {
     this.duckCount = Math.ceil(this.size * this.size / 7);
     this.availableFlags = this.duckCount;
     this.time = 0;
-    this.count = 0;
     this.generate = function (rows, cols, start_x, start_y) {
         for (var y = (start_y || 0); y < rows + (start_y || 0); y++) {
             var tr = document.createElement('tr');
@@ -143,9 +142,10 @@ function Game(el, size) {
                 $td.removeClass('unrevealed');
                 if (!tile.isRevealed) {
                     tile.isRevealed = true;
-                    if (that.count >= that.size * that.size) {
+                    if (that.tiles.size >= that.size * that.size) {
                         clearInterval(that.interval);
                         that.infoEl.innerText = 'YOU WIN! 🕙' + that.time.toString().padStart(3, '0');
+                        document.body.onclick = () => {};
                     }
                 }
             }
@@ -157,7 +157,7 @@ function Game(el, size) {
         return ducks;
     };
     this.plantDucks = function (exclude) {
-        for (var i = 0; i < that.duckCount; i++) {
+        while (that.tiles.size < that.duckCount) {
             var x = getRandomInt(0, that.size - 1);
             var y = getRandomInt(0, that.size - 1);
             while (exclude.x == x && exclude.y == y) {
@@ -166,39 +166,48 @@ function Game(el, size) {
             }
             var tile = new Tile(x, y, true);
             tile.pushToGame(that);
-            that.count++;
         }
     };
 
     function loopSurroundingTiles(tile) {
         var isSafe = true;
         sums.forEach(function (sum) {
-            var foundTile = that.tiles.get(getTileId({
+            var newCoords = {
                 x: tile.x + sum.x,
                 y: tile.y + sum.y
-            }));
-            if (!foundTile) {
-                foundTile = new Tile(tile.x + sum.x, tile.y + sum.y, false);
-                foundTile.pushToGame(that);
-            }
-            if (foundTile.isMarked) {
+            };
+            if (newCoords.x > that.size - 1 || newCoords.x < 0)
                 return;
-            }
-            if (foundTile.isDuck) {
-                isSafe = false;
+            if (newCoords.y > that.size - 1 || newCoords.y < 0)
+                return;
+            var foundTile = that.tiles.get(getTileId(newCoords));
+            if (foundTile) {
+                if (foundTile.isMarked) {
+                    return;
+                }
+                if (foundTile.isDuck) {
+                    isSafe = false;
+                }
             }
         });
         if (isSafe) {
             sums.forEach(function (sum) {
-                var foundTile = that.tiles.get(getTileId({
+                var newCoords = {
                     x: tile.x + sum.x,
                     y: tile.y + sum.y
-                }));
+                };
+                if (newCoords.x > that.size - 1 || newCoords.x < 0)
+                    return;
+                if (newCoords.y > that.size - 1 || newCoords.y < 0)
+                    return;
+                var foundTile = that.tiles.get(getTileId(newCoords));
+                if (!foundTile) {
+                    foundTile = new Tile(tile.x + sum.x, tile.y + sum.y, false);
+                    foundTile.isVisible = true;
+                    foundTile.pushToGame(that);
+                }
                 if (foundTile.isMarked) {
                     return;
-                }
-                if (!foundTile.isVisible) {
-                    that.count++;
                 }
                 foundTile.isVisible = true;
                 that.reveal(foundTile);
@@ -211,7 +220,6 @@ function Game(el, size) {
         if (!tile) {
             tile = new Tile(x, y, false);
             tile.pushToGame(that);
-            that.count++;
         }
         if (tile.isVisible)
             loopSurroundingTiles(tile);
