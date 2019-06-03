@@ -59,6 +59,7 @@ function Game(el, size) {
         }
     };
     this.initialize = function () {
+        that.el.html('');
         that.infoEl = document.createElement('div');
         that.infoEl.innerText = '🚩×' + that.availableFlags + ' :::: 🕙' + that.time.toString().padStart(3, '0');
         that.el.append(that.infoEl);
@@ -294,3 +295,10 @@ function Tile(x, y, is_duck) {
 
 var game = new Game('#game', 15);
 game.initialize();
+
+var sizeInput = $('#size');
+var generateButton = $('#generate');
+generateButton.click(function () {
+    game = new Game('#game', Number(sizeInput.val()));
+    game.initialize();
+});
